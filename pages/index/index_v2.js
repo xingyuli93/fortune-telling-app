@@ -41,7 +41,7 @@ Page({
       mbti: this.data.mbtiRange[this.data.mbtiIndex]
     };
 
-    const requestUrl = 'http://17.81.101.150:8000/api/v1/divine';
+    const requestUrl = 'https://fortune-telling-app-lake.vercel.app/api/v1/divine';
 
     console.log("即将发起请求，URL:", requestUrl);
     console.log("请求数据:", requestData);
@@ -50,7 +50,7 @@ Page({
       url: requestUrl,
       method: 'POST',
       data: requestData,
-      timeout: 5000, // 设置5秒超时
+      timeout: 15000, // 部署后的服务第一次启动可能较慢，设置15秒超时
       success: (res) => {
         console.log("收到成功响应:", res);
         if (res.statusCode === 200) {
@@ -68,7 +68,7 @@ Page({
       fail: (err) => {
         console.error("请求失败:", err);
         wx.showToast({
-          title: `连接服务器失败，请检查网络或服务是否开启。请求地址: ${requestUrl}`,
+          title: `连接服务器失败，请稍后重试。`,
           icon: 'none',
           duration: 3000
         });

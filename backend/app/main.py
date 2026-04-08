@@ -1,12 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from datetime import datetime
+import random
+
 from .models.schemas import UserInputSchema, DivineResultSchema, AnalysisSchema
 from .core.bazi import get_bazi_from_datetime
+from .core.database import get_db_connection, release_db_connection
 
 app = FastAPI(
     title="算命先生 API",
     description="一个结合了姓名、生日和MBTI的专业算命引擎。",
-    version="0.1.0",
+    version="1.0.0",
 )
 
 @app.get("/", tags=["通用"])
@@ -16,39 +19,61 @@ async def read_root():
 @app.post("/api/v1/divine", response_model=DivineResultSchema, tags=["算命"])
 async def get_divine_result(user_input: UserInputSchema):
     """
-    接收用户信息，返回详细的算命结果。
+    接收用户信息，连接数据库，返回包含真实解读的算命结果。
     """
-    # 1. 解析用户生日
+    conn = None
     try:
-        # 注意：为了精确计算时柱，我们需要用户的出生时间。这里暂时使用中午12点。
-        birth_dt = datetime.strptime(f"{user_input.birthdate} 12:00", "%Y-%m-%d %H:%M")
-    except ValueError:
-        birth_dt = datetime.now()
+        # 1. 解析用户生日并计算命理信息
+        try:
+            birth_dt = datetime.strptime(f"{user_input.birthdate} 12:00", "%Y-%m-%d %H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="日期格式不正确，请使用 YYYY-MM-DD 格式。")
+        
+        bazi_info = get_bazi_from_datetime(birth_dt)
 
-    # 2. 计算命理信息
-    bazi_info = get_bazi_from_datetime(birth_dt)
-    
-    # 构造八字字符串
-    bazi_str = f"年:{bazi_info['bazi']['year']} 月:{bazi_info['bazi']['month']} 日:{bazi_info['bazi']['day']} 时:{bazi_info['bazi']['hour']}"
-    # 构造五行字符串
-    wuxing_str = ", ".join([f"{k}:{v}个" for k, v in bazi_info['wuxing'].items() if v > 0])
+        # 2. 准备命理标签用于查询
+        tags = [
+            f"日主{bazi_info['day_master']}",
+            f"MBTI_{user_input.mbti}"
+        ]
+        # 添加五行旺衰标签
+        wuxing_max = max(bazi_info['wuxing'], key=bazi_info['wuxing'].get)
+        wuxing_min = min(bazi_info['wuxing'], key=bazi_info['wuxing'].get)
+        if bazi_info['wuxing'][wuxing_max] >= 4:
+            tags.append(f"五行{wuxing_max}旺")
+        if bazi_info['wuxing'][wuxing_min] == 0:
+            tags.append(f"五行缺{wuxing_min}")
 
-    # TODO: 在这里实现基于 bazi_info 的数据库查询和文本生成逻辑
+        # 3. 从数据库连接池获取连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    # 临时返回一个包含真实命理信息的模拟结果
-    mock_analysis = AnalysisSchema(
-        summary=f"你好 {user_input.name} ({user_input.mbti})。您的八字为：{bazi_str}。日主为‘{bazi_info['day_master']}’，五行分布为：{wuxing_str}。",
-        study="【学业】基于您的命理，学业分析正在紧张开发中...",
-        career="【事业】基于您的命理，事业分析正在紧张开发中...",
-        love="【爱情】基于您的命理，爱情分析正在紧张开发中...",
-        health="【健康】基于您的命理，健康分析正在紧张开发中...",
-        wealth="【财运】基于您的命理，财运分析正在紧张开发中...",
-        social="【人际】基于您的命理，人际分析正在紧张开发中..."
-    )
+        # 4. 查询解读文本
+        analysis_texts = {}
+        categories = ['summary', 'study', 'career', 'love', 'health', 'wealth', 'social']
+        for cat in categories:
+            cursor.execute(
+                "SELECT interpretation_text FROM interpretations WHERE category = %s AND tag = ANY(%s) ORDER BY sentiment_score DESC LIMIT 1",
+                (cat, tags)
+            )
+            result = cursor.fetchone()
+            analysis_texts[cat] = result[0] if result else f"【{cat.capitalize()}】暂无与您命理（{', '.join(tags)}）完全匹配的解读。"
 
-    return DivineResultSchema(
-        fortune="上上大吉：引擎升级，内功大增",
-        analysis=mock_analysis
-    )
+        # 5. 随机抽取一条签文
+        cursor.execute("SELECT fortune_text FROM fortunes ORDER BY RANDOM() LIMIT 1")
+        fortune_text = cursor.fetchone()[0]
+
+        # 6. 组合最终结果
+        final_analysis = AnalysisSchema(**analysis_texts)
+        return DivineResultSchema(fortune=fortune_text, analysis=final_analysis)
+
+    except Exception as e:
+        # 异常处理
+        print(f"发生错误: {e}")
+        raise HTTPException(status_code=500, detail="服务器内部错误，我们正在紧急处理！")
+    finally:
+        # 确保数据库连接被释放回连接池
+        if conn:
+            release_db_connection(conn)
 
 # 在本地开发时，请在 backend 目录下运行: uvicorn app.main:app --reload
