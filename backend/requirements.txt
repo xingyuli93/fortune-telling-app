@@ -1,5 +1,3 @@
 fastapi
 uvicorn[standard]
 sxtwl
-psycopg2-binary
-python-dotenv
