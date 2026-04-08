@@ -10,47 +10,58 @@
   position: relative;
 }
 
+.shake-wrapper {
+  perspective: 1000rpx;
+}
+
 .shake-bucket {
-  width: 300rpx;
-  height: 300rpx;
+  width: 350rpx;
+  height: 350rpx;
   z-index: 2;
+  transition: transform 0.2s ease-in-out;
 }
 
-.shaking {
-  animation: shake-animation 0.2s linear infinite;
+.shaking .shake-bucket {
+  animation: shake-3d 0.4s linear infinite;
 }
 
-@keyframes shake-animation {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(5rpx, -5rpx) rotate(1deg); }
-  50% { transform: translate(0, 0) rotate(0eg); }
-  75% { transform: translate(-5rpx, 5rpx) rotate(-1deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+@keyframes shake-3d {
+  0% { transform: translate(0, 0) rotateX(0) rotateY(0); }
+  25% { transform: translate(5rpx, -5rpx) rotateX(-5deg) rotateY(5deg); }
+  50% { transform: translate(0, 0) rotateX(0) rotateY(0); }
+  75% { transform: translate(-5rpx, 5rpx) rotateX(5deg) rotateY(-5deg); }
+  100% { transform: translate(0, 0) rotateX(0) rotateY(0); }
 }
 
 .shake-stick {
-  width: 200rpx;
-  height: 200rpx; /* 调整为合适尺寸 */
+  width: 250rpx;
+  height: 250rpx;
   position: absolute;
-  top: 40%;
+  top: 35%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(45deg);
   z-index: 1;
   opacity: 0;
-  transition: all 0.5s ease-in-out;
+  transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .falling {
-  top: 60%;
+  top: 65%;
   opacity: 1;
-  transform: translate(-50%, -50%) rotate(90deg);
+  transform: translate(-50%, -50%) rotate(100deg);
 }
 
 .shake-tip {
-  margin-top: 40rpx;
-  font-size: 32rpx;
-  color: #fff;
-  text-shadow: 0 0 5px rgba(0,0,0,0.5);
+  margin-top: 60rpx;
+  font-size: 36rpx;
+  color: #f0ad4e;
+  text-shadow: 0 0 10px rgba(240, 173, 78, 0.7);
+  animation: breath 2s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 /* ... (之后的样式保持不变) ... */
