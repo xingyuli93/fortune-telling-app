@@ -1,4 +1,4 @@
-// index_v2.js (最终修复版)
+// index_v2.js (回退到无动画的最终修复版)
 
 Page({
   data: {
@@ -9,53 +9,19 @@ Page({
     showResult: false,
     result: {},
     analysisWithTyping: {},
-    typingTimer: null,
-    showShake: false,
-    isShaking: false,
-    isStickFalling: false
+    typingTimer: null
   },
 
   onNameInput(e) { this.setData({ name: e.detail.value }); },
   onBirthdateChange(e) { this.setData({ birthdate: e.detail.value }); },
   onMbtiChange(e) { this.setData({ mbtiIndex: e.detail.value }); },
 
-  startShake() {
+  getFortune() {
     if (!this.data.name || !this.data.birthdate || this.data.mbtiIndex == 0) {
       wx.showToast({ title: '请输入所有信息', icon: 'none' });
       return;
     }
-    this.setData({ showShake: true, showResult: false });
-    this.listenShake();
-  },
 
-  listenShake() {
-    let shakeCount = 0;
-    wx.startAccelerometer({
-      interval: 'ui',
-      success: () => {
-        wx.onAccelerometerChange((res) => {
-          if (Math.abs(res.x) > 1.2 || Math.abs(res.y) > 1.2 || Math.abs(res.z) > 1.2) { // 提高摇晃阈值
-            shakeCount++;
-            this.setData({ isShaking: true });
-            if (shakeCount > 3) { // 减少触发次数
-              wx.stopAccelerometer();
-              this.setData({ isShaking: false, isStickFalling: true });
-              setTimeout(() => {
-                this.setData({ showShake: false });
-                this.getFortune();
-              }, 1200); // 动画时间匹配
-            }
-          }
-        });
-      },
-      fail: () => {
-        wx.showToast({ title: '陀螺仪启动失败，请允许小程序权限', icon: 'none' });
-        this.setData({ showShake: false }); // 启动失败则退回
-      }
-    });
-  },
-
-  getFortune() {
     wx.showLoading({ title: '匹配天命中...' });
     const requestData = {
       name: this.data.name,
@@ -73,11 +39,11 @@ Page({
           this.setData({ result: res.data, showResult: true });
           this.runTypingEffect(res.data.analysis);
         } else {
-          wx.showToast({ title: `服务开小差了: ${res.statusCode}`, icon: 'none' });
+          wx.showToast({ title: `服务返回错误: ${res.statusCode}`, icon: 'none' });
         }
       },
       fail: (err) => {
-        wx.showToast({ title: `连接服务器失败，请检查网络`, icon: 'none' });
+        wx.showToast({ title: `连接服务器失败，请稍后重试。`, icon: 'none' });
       },
       complete: () => {
         wx.hideLoading();
@@ -125,6 +91,5 @@ Page({
 
   onUnload() {
     this.clearTypingTimer();
-    wx.stopAccelerometer();
   }
 });
