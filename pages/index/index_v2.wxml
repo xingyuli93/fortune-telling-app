@@ -1,7 +1,7 @@
 <!--index.wxml-->
 <view class="container">
   <!-- 主输入界面 -->
-  <view class="main-content" hidden="{{showResult}}">
+  <view class="main-content" hidden="{{showResult || showShake}}">
     <view class="title">请输入您的信息</view>
     <view class="form">
       <input class="input-item" placeholder="请输入您的姓名" bindinput="onNameInput"/>
@@ -12,7 +12,20 @@
         <view>{{mbtiRange[mbtiIndex] || '请选择您的MBTI类型'}}</view>
       </picker>
     </view>
-    <button class="shake-button" bindtap="getFortune">开始算命</button>
+    <button class="shake-button" bindtap="startShake">开始摇签</button>
+  </view>
+
+  <!-- 摇签动画界面 -->
+  <view class="shake-container" hidden="{{!showShake}}">
+    <image 
+      class="shake-bucket"
+      src="https://img.freepik.com/premium-vector/chinese-fortune-sticks-in-bamboo-holder_1308-118582.jpg"
+    />
+    <image 
+      class="shake-stick"
+      src="https://img.freepik.com/premium-vector/vector-illustration-of-a-fortune-stick_1308-118581.jpg"
+    />
+    <view class="shake-tip">请摇晃您的手机</view>
   </view>
 
   <!-- 结果卡片 -->
