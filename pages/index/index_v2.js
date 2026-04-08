@@ -1,4 +1,4 @@
-// index_v2.js
+// index_v2.js (最终修复版)
 
 Page({
   data: {
@@ -34,19 +34,23 @@ Page({
       interval: 'ui',
       success: () => {
         wx.onAccelerometerChange((res) => {
-          if (Math.abs(res.x) > 1 || Math.abs(res.y) > 1 || Math.abs(res.z) > 1) {
+          if (Math.abs(res.x) > 1.2 || Math.abs(res.y) > 1.2 || Math.abs(res.z) > 1.2) { // 提高摇晃阈值
             shakeCount++;
             this.setData({ isShaking: true });
-            if (shakeCount > 5) {
+            if (shakeCount > 3) { // 减少触发次数
               wx.stopAccelerometer();
               this.setData({ isShaking: false, isStickFalling: true });
               setTimeout(() => {
                 this.setData({ showShake: false });
                 this.getFortune();
-              }, 1000);
+              }, 1200); // 动画时间匹配
             }
           }
         });
+      },
+      fail: () => {
+        wx.showToast({ title: '陀螺仪启动失败，请允许小程序权限', icon: 'none' });
+        this.setData({ showShake: false }); // 启动失败则退回
       }
     });
   },
@@ -69,11 +73,11 @@ Page({
           this.setData({ result: res.data, showResult: true });
           this.runTypingEffect(res.data.analysis);
         } else {
-          wx.showToast({ title: `服务返回错误: ${res.statusCode}`, icon: 'none' });
+          wx.showToast({ title: `服务开小差了: ${res.statusCode}`, icon: 'none' });
         }
       },
       fail: (err) => {
-        wx.showToast({ title: `连接服务器失败，请稍后重试。`, icon: 'none', duration: 3000 });
+        wx.showToast({ title: `连接服务器失败，请检查网络`, icon: 'none' });
       },
       complete: () => {
         wx.hideLoading();
@@ -103,7 +107,7 @@ Page({
           this.clearTypingTimer();
         }
       }
-    }, 50);
+    }, 40);
     this.setData({ typingTimer: timer });
   },
 
@@ -121,5 +125,6 @@ Page({
 
   onUnload() {
     this.clearTypingTimer();
+    wx.stopAccelerometer();
   }
 });
