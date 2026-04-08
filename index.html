@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>算卦摇签</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="title">请输入您的信息</div>
+    <div class="form">
+      <input type="text" id="nameInput" placeholder="请输入您的姓名">
+      <input type="date" id="birthdateInput">
+      <select id="mbtiInput">
+        <option value="">选择您的MBTI类型</option>
+        <option value="ISTJ">ISTJ</option>
+        <option value="ISFJ">ISFJ</option>
+        <option value="INFJ">INFJ</option>
+        <option value="INTJ">INTJ</option>
+        <option value="ISTP">ISTP</option>
+        <option value="ISFP">ISFP</option>
+        <option value="INFP">INFP</option>
+        <option value="INTP">INTP</option>
+        <option value="ESTP">ESTP</option>
+        <option value="ESFP">ESFP</option>
+        <option value="ENFP">ENFP</option>
+        <option value="ENTP">ENTP</option>
+        <option value="ESTJ">ESTJ</option>
+        <option value="ESFJ">ESFJ</option>
+        <option value="ENFJ">ENFJ</option>
+        <option value="ENTJ">ENTJ</option>
+      </select>
+    </div>
+    <button class="shake-button" id="shakeButton">开始算命</button>
+  </div>
+
+  <div id="resultCard" class="result-card" style="display: none;">
+    <h2 id="resultFortune"></h2>
+    <div id="resultAnalysis"></div>
+    <button id="closeButton" class="close-button">关闭</button>
+  </div>
+
+  <script src="fortunes.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

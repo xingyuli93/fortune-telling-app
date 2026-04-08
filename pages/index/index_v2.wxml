@@ -1,0 +1,28 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 主输入界面 -->
+  <view class="main-content" hidden="{{showResult}}">
+    <view class="title">请输入您的信息</view>
+    <view class="form">
+      <input class="input-item" placeholder="请输入您的姓名" bindinput="onNameInput"/>
+      <picker mode="date" class="input-item picker" bindchange="onBirthdateChange">
+        <view>{{birthdate || '请选择您的生日'}}</view>
+      </picker>
+      <picker class="input-item picker" bindchange="onMbtiChange" range="{{mbtiRange}}">
+        <view>{{mbtiRange[mbtiIndex] || '请选择您的MBTI类型'}}</view>
+      </picker>
+    </view>
+    <button class="shake-button" bindtap="getFortune">开始算命</button>
+  </view>
+
+  <!-- 结果卡片 -->
+  <view class="result-card" hidden="{{!showResult}}">
+    <view class="result-fortune">{{result.fortune}}</view>
+    <view class="result-analysis">
+      <block wx:for="{{result.analysis}}" wx:for-item="analysisText" wx:key="index">
+        <view class="analysis-item">{{analysisText}}</view>
+      </block>
+    </view>
+    <button class="close-button" bindtap="closeResult">重新算命</button>
+  </view>
+</view>
