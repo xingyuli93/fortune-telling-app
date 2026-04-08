@@ -63,7 +63,7 @@ Page({
       url: requestUrl,
       method: 'POST',
       data: requestData,
-      timeout: 20000, // AI生成需要更长时间，增加超时
+      timeout: 20000,
       success: (res) => {
         if (res.statusCode === 200) {
           this.setData({ result: res.data, showResult: true });
