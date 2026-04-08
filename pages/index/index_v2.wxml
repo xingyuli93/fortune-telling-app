@@ -16,12 +16,16 @@
   </view>
 
   <!-- 结果卡片 -->
-  <view class="result-card" hidden="{{!showResult}}">
+  <view class="result-card" hidden="{{!showResult}}" style="animation: fadeInScale 0.5s forwards;">
     <view class="result-fortune">{{result.fortune}}</view>
     <view class="result-analysis">
-      <block wx:for="{{result.analysis}}" wx:for-item="analysisText" wx:key="index">
-        <view class="analysis-item">{{analysisText}}</view>
-      </block>
+      <view class="analysis-item">{{analysisWithTyping.summary}}</view>
+      <view class="analysis-item">{{analysisWithTyping.study}}</view>
+      <view class="analysis-item">{{analysisWithTyping.career}}</view>
+      <view class="analysis-item">{{analysisWithTyping.love}}</view>
+      <view class="analysis-item">{{analysisWithTyping.health}}</view>
+      <view class="analysis-item">{{analysisWithTyping.wealth}}</view>
+      <view class="analysis-item">{{analysisWithTyping.social}}</view>
     </view>
     <button class="close-button" bindtap="closeResult">重新算命</button>
   </view>

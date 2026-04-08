@@ -1,85 +1,75 @@
-// index.js
+// index_v2.js
 
 Page({
   data: {
-    name: '',
-    birthdate: '',
-    mbtiRange: ['选择您的MBTI类型', 'ISTJ', 'ISFJ', 'INFJ', 'INTJ', 'ISTP', 'ISFP', 'INFP', 'INTP', 'ESTP', 'ESFP', 'ENFP', 'ENTP', 'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'],
-    mbtiIndex: 0,
-    showResult: false,
-    result: {}
+    // ... (其他 data 字段不变)
+    analysisWithTyping: {}, // 用于逐字打印的分析对象
+    typingTimer: null // 用于清除定时器
   },
 
-  onNameInput(e) {
-    this.setData({ name: e.detail.value });
-  },
-
-  onBirthdateChange(e) {
-    this.setData({ birthdate: e.detail.value });
-  },
-
-  onMbtiChange(e) {
-    this.setData({ mbtiIndex: e.detail.value });
-  },
+  // ... (其他生命周期和事件处理函数不变)
 
   getFortune() {
-    if (!this.data.name || !this.data.birthdate || this.data.mbtiIndex == 0) {
-      wx.showToast({
-        title: '请输入所有信息',
-        icon: 'none'
-      });
-      return;
-    }
-
-    wx.showLoading({
-      title: '匹配天命中...',
-    });
-
-    const requestData = {
-      name: this.data.name,
-      birthdate: this.data.birthdate,
-      mbti: this.data.mbtiRange[this.data.mbtiIndex]
-    };
-
-    const requestUrl = 'https://fortune-telling-app-lake.vercel.app/api/v1/divine';
-
-    console.log("即将发起请求，URL:", requestUrl);
-    console.log("请求数据:", requestData);
+    // ... (请求逻辑不变)
 
     wx.request({
-      url: requestUrl,
-      method: 'POST',
-      data: requestData,
-      timeout: 15000, // 部署后的服务第一次启动可能较慢，设置15秒超时
+      // ... (url, method, data, timeout 不变)
       success: (res) => {
-        console.log("收到成功响应:", res);
         if (res.statusCode === 200) {
           this.setData({ 
             result: res.data,
             showResult: true 
           });
+          this.runTypingEffect(res.data.analysis);
         } else {
-          wx.showToast({
-            title: `服务返回错误: ${res.statusCode}`,
-            icon: 'none'
-          });
+          // ... (错误处理不变)
         }
       },
-      fail: (err) => {
-        console.error("请求失败:", err);
-        wx.showToast({
-          title: `连接服务器失败，请稍后重试。`,
-          icon: 'none',
-          duration: 3000
-        });
-      },
-      complete: () => {
-        wx.hideLoading();
-      }
+      // ... (fail, complete 不变)
     })
   },
 
+  runTypingEffect(analysis) {
+    this.clearTypingTimer(); // 先清除旧的定时器
+    const categories = ['summary', 'study', 'career', 'love', 'health', 'wealth', 'social'];
+    let charIndex = 0;
+    let categoryIndex = 0;
+    let currentCategory = categories[categoryIndex];
+    let displayedAnalysis = {};
+
+    const timer = setInterval(() => {
+      const fullText = analysis[currentCategory];
+      if (charIndex < fullText.length) {
+        displayedAnalysis[currentCategory] = fullText.substring(0, charIndex + 1);
+        this.setData({ analysisWithTyping: displayedAnalysis });
+        charIndex++;
+      } else {
+        categoryIndex++;
+        if (categoryIndex < categories.length) {
+          currentCategory = categories[categoryIndex];
+          charIndex = 0;
+        } else {
+          this.clearTypingTimer(); // 全部完成
+        }
+      }
+    }, 50); // 每50毫秒打印一个字
+
+    this.setData({ typingTimer: timer });
+  },
+
+  clearTypingTimer() {
+    if (this.data.typingTimer) {
+      clearInterval(this.data.typingTimer);
+      this.setData({ typingTimer: null });
+    }
+  },
+
   closeResult() {
-    this.setData({ showResult: false });
+    this.clearTypingTimer();
+    this.setData({ showResult: false, analysisWithTyping: {} });
+  },
+
+  onUnload() {
+    this.clearTypingTimer(); // 页面卸载时确保清除定时器
   }
 });

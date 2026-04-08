@@ -26,6 +26,7 @@ page {
   background-color: rgba(0, 0, 0, 0.5);
   padding: 40rpx;
   border-radius: 20rpx;
+  transition: opacity 0.5s;
 }
 
 .title {
@@ -75,12 +76,25 @@ page {
   border: 1rpx solid rgba(255, 255, 255, 0.3);
   border-radius: 20rpx;
   text-align: center;
+  opacity: 0;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .result-fortune {
   font-size: 40rpx;
   margin-bottom: 30rpx;
   color: #f0ad4e;
+  font-weight: bold;
 }
 
 .result-analysis {
@@ -89,8 +103,9 @@ page {
 
 .analysis-item {
   font-size: 32rpx;
-  line-height: 1.6;
-  margin-bottom: 20rpx;
+  line-height: 1.8;
+  margin-bottom: 25rpx;
+  white-space: pre-wrap; /* 保证换行符生效 */
 }
 
 .close-button {
